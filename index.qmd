@@ -1,0 +1,28 @@
+---
+title: "Mid-Atlantic Nature Atlas"
+subtitle: "What iNaturalist observations say about when nature happens in Maryland, Pennsylvania, and DC"
+---
+
+## The question
+
+When do fungi, plants, birds, and insects show up in citizen-science data in
+Maryland, Pennsylvania, and Washington, DC, and how much of that pattern is biology
+versus how many people are out looking?
+
+## Approach
+
+1. Bulk iNaturalist research-grade observations from GBIF, filtered to MD, PA, and DC.
+2. Weekly **effort-adjusted seasonality index**: a group's share of observations in a
+   given week, relative to all observations that week. Values above 1 mean the group
+   is over-represented that week compared with overall observer effort.
+3. Next: compare with eBird for birds to see where the platforms disagree on timing.
+
+## Pages
+
+- [Seasonality](analysis/01-seasonality.qmd): effort, effort-adjusted heatmap, peak weeks.
+- [Plant phenology](analysis/02-plant-phenology.qmd): flowering windows for common species, from iNaturalist annotations.
+
+## Data and caveats
+
+Data are community-contributed and reflect where and when people observe, not a
+systematic survey. Observer identities are anonymized with a one-way hash.

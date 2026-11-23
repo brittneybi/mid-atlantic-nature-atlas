@@ -1,0 +1,106 @@
+---
+title: "Seasonality"
+---
+
+```{r setup}
+library(tidyverse)
+library(here)
+library(scales)
+
+theme_set(theme_minimal(base_size = 12))
+
+focus <- c("Fungi", "Plants", "Birds", "Insects")
+month_breaks <- c(1, 5, 9, 14, 18, 22, 27, 31, 35, 40, 44, 48)
+
+obs <- read_csv(here("data", "processed", "observations.csv"),
+                show_col_types = FALSE) |>
+  mutate(week_of_year = pmin(week_of_year, 52L))   # fold week 53 into 52
+
+effort <- read_csv(here("data", "processed", "effort_total_weekly.csv"),
+                   show_col_types = FALSE)
+```
+
+## Observer effort
+
+Observations per week climb with the number of observers, and both have a strong
+seasonal rhythm of their own. That is why raw counts can't be read as biology.
+
+```{r effort}
+effort |>
+  filter(week_start >= as.Date("2018-01-01")) |>
+  ggplot(aes(week_start, observations, colour = stateProvince)) +
+  geom_line(alpha = 0.8) +
+  scale_y_continuous(labels = label_comma()) +
+  labs(x = NULL, y = "Observations per week", colour = NULL)
+```
+
+## Effort-adjusted seasonality
+
+For each state and group, the index is the group's share of its yearly observations
+falling in a given week, divided by the share of *all* observations falling in that
+week. Above 1 (red) = over-represented relative to overall effort.
+
+```{r index}
+weekly <- obs |>
+  filter(group %in% focus) |>
+  count(stateProvince, group, week_of_year, name = "n") |>
+  complete(stateProvince, group, week_of_year = 1:52, fill = list(n = 0)) |>
+  group_by(stateProvince, group) |>
+  mutate(group_share = n / sum(n)) |>
+  ungroup()
+
+all_week <- obs |>
+  count(stateProvince, week_of_year, name = "n_all") |>
+  complete(stateProvince, week_of_year = 1:52, fill = list(n_all = 0)) |>
+  group_by(stateProvince) |>
+  mutate(all_share = n_all / sum(n_all)) |>
+  ungroup() |>
+  select(stateProvince, week_of_year, all_share)
+
+index <- weekly |>
+  left_join(all_week, by = c("stateProvince", "week_of_year")) |>
+  mutate(rel_index = group_share / all_share)
+```
+
+```{r heatmap}
+#| fig-height: 8
+index |>
+  mutate(group = factor(group, levels = rev(focus))) |>
+  ggplot(aes(week_of_year, group, fill = rel_index)) +
+  geom_tile() +
+  facet_wrap(~stateProvince, ncol = 1) +
+  scale_x_continuous(breaks = month_breaks, labels = month.abb,
+                     expand = c(0, 0)) +
+  scale_fill_gradient2(low = "#2c7bb6", mid = "white", high = "#d7191c",
+                       midpoint = 1, limits = c(0, 3), oob = squish,
+                       name = "Relative\nindex") +
+  labs(x = NULL, y = NULL)
+```
+
+## Peak weeks
+
+Peak week of the adjusted index, using only weeks with at least 20 observations
+for that group and state so thin data doesn't create fake peaks.
+
+```{r peaks}
+index |>
+  filter(n >= 20) |>
+  group_by(stateProvince, group) |>
+  slice_max(rel_index, n = 1, with_ties = FALSE) |>
+  ungroup() |>
+  transmute(State = stateProvince, Group = group,
+            `Peak week` = week_of_year,
+            `Approx. date` = format(as.Date("2025-01-01") + (week_of_year - 1) * 7,
+                                    "%b %d"),
+            Observations = n,
+            Index = round(rel_index, 2)) |>
+  arrange(State, Group) |>
+  knitr::kable()
+```
+
+## Notes and next steps
+
+- All years are pooled, so recent years (when iNaturalist grew fastest) carry the
+  most weight. A sturdier version computes shares within each year and averages.
+- Fungi and plants peak counts mix biology with observer behavior (for example,
+  people hike more in fall). Comparing with eBird for birds is the next test.

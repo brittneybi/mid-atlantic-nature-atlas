@@ -1,0 +1,108 @@
+---
+title: "Plant phenology"
+---
+
+iNaturalist observers can annotate a plant observation as *Flower Budding*,
+*Flowering*, *Fruiting*, or *No Evidence of Flowering*. Only a small share of plant
+observations carry one of these annotations, so this page looks at a short list of
+common species in Maryland, Pennsylvania, and DC, pulled through the API with
+`scripts/pull_phenology.R`.
+
+```{r setup}
+library(tidyverse)
+library(here)
+library(lubridate)
+
+theme_set(theme_minimal(base_size = 12))
+month_breaks <- c(1, 5, 9, 14, 18, 22, 27, 31, 35, 40, 44, 48)
+phases <- c("Flower Budding", "Flowering", "Fruiting", "No Evidence of Flowering")
+
+ann <- read_csv(here("data", "processed", "phenology_annotations.csv"),
+                show_col_types = FALSE) |>
+  mutate(
+    observed_on = as.Date(observed_on),
+    week        = pmin(isoweek(observed_on), 52L),
+    biweek      = (week - 1L) %/% 2L * 2L + 1L,
+    phenophase  = factor(phenophase, levels = phases),
+    label       = coalesce(common_name, species)
+  ) |>
+  filter(!is.na(observed_on), !is.na(phenophase))
+```
+
+## Coverage
+
+```{r coverage}
+ann |>
+  count(label, state) |>
+  pivot_wider(names_from = state, values_from = n, values_fill = 0) |>
+  arrange(desc(rowSums(across(where(is.numeric))))) |>
+  knitr::kable()
+```
+
+## Flowering windows
+
+For each species and state, the dot is the median week of observations annotated
+*Flowering* and the bar spans the 10th to 90th percentile. Only species and state
+combinations with at least 30 flowering annotations are shown.
+
+```{r windows}
+#| fig-height: 7
+windows <- ann |>
+  filter(phenophase == "Flowering") |>
+  group_by(label, status, state) |>
+  summarise(n = n(),
+            p10 = quantile(week, 0.10),
+            median = median(week),
+            p90 = quantile(week, 0.90),
+            .groups = "drop") |>
+  filter(n >= 30)
+
+windows |>
+  mutate(label = fct_reorder(label, median, .fun = median)) |>
+  ggplot(aes(y = label, x = median, xmin = p10, xmax = p90, colour = state)) +
+  geom_pointrange(position = position_dodge(width = 0.6)) +
+  scale_x_continuous(breaks = month_breaks, labels = month.abb) +
+  labs(x = NULL, y = NULL, colour = NULL)
+```
+
+```{r windows-table}
+windows |>
+  arrange(median) |>
+  transmute(Species = label, Status = status, State = state,
+            `Flowering obs` = n,
+            `Median date` = format(as.Date("2025-01-01") + (median - 1) * 7, "%b %d"),
+            `10th pct` = format(as.Date("2025-01-01") + (p10 - 1) * 7, "%b %d"),
+            `90th pct` = format(as.Date("2025-01-01") + (p90 - 1) * 7, "%b %d")) |>
+  knitr::kable()
+```
+
+## Phenophase mix through the year
+
+Share of annotated observations in each phenophase by two-week bin, all three
+jurisdictions pooled. Species with fewer than 60 annotations are left out.
+
+```{r mix}
+#| fig-height: 9
+keep_species <- ann |> count(label) |> filter(n >= 60) |> pull(label)
+
+ann |>
+  filter(label %in% keep_species) |>
+  count(label, biweek, phenophase) |>
+  ggplot(aes(biweek, n, fill = phenophase)) +
+  geom_col(position = "fill", width = 2) +
+  facet_wrap(~label, ncol = 2) +
+  scale_x_continuous(breaks = month_breaks, labels = month.abb) +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Set2", drop = FALSE) +
+  labs(x = NULL, y = "Share of annotated observations", fill = NULL)
+```
+
+## Caveats
+
+- Annotations are added by observers and identifiers, not collected systematically.
+  People tend to photograph and annotate flowers more than leaves or bare stems, so
+  "Flowering" is over-represented relative to how long a plant is actually in flower.
+- Windows from observations describe when plants are *seen* flowering, which lags the
+  true start and end of flowering, especially for rarely observed species.
+- Years are pooled. A natural next step is to compare windows across years and against
+  spring temperature to look for shifts.

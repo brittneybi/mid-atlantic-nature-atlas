@@ -1,0 +1,24 @@
+project:
+  type: website
+  output-dir: docs        # GitHub Pages: Settings > Pages > deploy from /docs
+
+website:
+  title: "Mid-Atlantic Nature Atlas"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: analysis/01-seasonality.qmd
+        text: Seasonality
+      - href: analysis/02-plant-phenology.qmd
+        text: Plant phenology
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-fold: true
+
+execute:
+  freeze: auto            # re-run R only when a .qmd changes
+  warning: false
