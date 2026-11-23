@@ -1,0 +1,37 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Mid-Atlantic Nature Atlas",
+    "section": "",
+    "text": "When do fungi, plants, birds, and insects show up in citizen-science data in Maryland, Pennsylvania, and Washington, DC, and how much of that pattern is biology versus how many people are out looking?"
+  },
+  {
+    "objectID": "index.html#the-question",
+    "href": "index.html#the-question",
+    "title": "Mid-Atlantic Nature Atlas",
+    "section": "",
+    "text": "When do fungi, plants, birds, and insects show up in citizen-science data in Maryland, Pennsylvania, and Washington, DC, and how much of that pattern is biology versus how many people are out looking?"
+  },
+  {
+    "objectID": "index.html#approach",
+    "href": "index.html#approach",
+    "title": "Mid-Atlantic Nature Atlas",
+    "section": "Approach",
+    "text": "Approach\n\nBulk iNaturalist research-grade observations from GBIF, filtered to MD, PA, and DC.\nWeekly effort-adjusted seasonality index: a group’s share of observations in a given week, relative to all observations that week. Values above 1 mean the group is over-represented that week compared with overall observer effort.\nNext: compare with eBird for birds to see where the platforms disagree on timing."
+  },
+  {
+    "objectID": "index.html#pages",
+    "href": "index.html#pages",
+    "title": "Mid-Atlantic Nature Atlas",
+    "section": "Pages",
+    "text": "Pages\n\nSeasonality: effort, effort-adjusted heatmap, peak weeks.\nPlant phenology: flowering windows for common species, from iNaturalist annotations."
+  },
+  {
+    "objectID": "index.html#data-and-caveats",
+    "href": "index.html#data-and-caveats",
+    "title": "Mid-Atlantic Nature Atlas",
+    "section": "Data and caveats",
+    "text": "Data and caveats\nData are community-contributed and reflect where and when people observe, not a systematic survey. Observer identities are anonymized with a one-way hash."
+  }
+]

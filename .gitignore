@@ -7,3 +7,6 @@ data/processed/*
 .RData
 .quarto/
 __pycache__/
+
+/.quarto/
+**/*.quarto_ipynb
