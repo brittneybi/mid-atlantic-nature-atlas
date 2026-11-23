@@ -19,8 +19,10 @@ versus how many people are out looking?
 
 ## Pages
 
-- [Seasonality](analysis/01-seasonality.qmd): effort, effort-adjusted heatmap, peak weeks.
-- [Plant phenology](analysis/02-plant-phenology.qmd): flowering windows for common species, from iNaturalist annotations.
+Analysis pages are in progress and will appear here once the data is processed:
+
+- Seasonality: effort, effort-adjusted heatmap, peak weeks
+- Plant phenology: flowering windows for common species, from iNaturalist annotations
 
 ## Data and caveats
 
