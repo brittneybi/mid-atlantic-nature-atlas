@@ -8,10 +8,11 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - href: analysis/01-seasonality.qmd
-        text: Seasonality
-      - href: analysis/02-plant-phenology.qmd
-        text: Plant phenology
+      # Uncomment once the data is processed and the pages render:
+      # - href: analysis/01-seasonality.qmd
+      #   text: Seasonality
+      # - href: analysis/02-plant-phenology.qmd
+      #   text: Plant phenology
 
 format:
   html:
